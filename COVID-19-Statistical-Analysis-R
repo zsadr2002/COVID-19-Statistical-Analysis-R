@@ -1,0 +1,77 @@
+rm(list=ls())  # removes all variables stored previously
+
+data <- read_csv("~/Desktop/COVID19_line_list_data.csv")
+data
+
+install.packages("Hmisc")
+library(Hmisc)
+
+describe(data)
+glimpse(data)
+
+# cleaned up death column
+#  this value is not equal to 0, it signifies deaths. If it is equal to zero, it indicates no deaths.
+data$death_dummy <- as.integer(data$death != 0)
+data$death_dummy
+
+# death rate
+ death_rate <- sum(data$death_dummy) / nrow(data)
+ death_rate
+ 
+ # Age
+ # claim : older age have more chance to died because of Corona.
+ 
+ dead = subset(data, death_dummy == 1)
+ alive = subset(data, death_dummy == 0)
+ mean(dead$age, na.rm= TRUE)
+ mean(alive$age, na.rm= TRUE)
+ 
+ # Is the relationship between the rate of death and age statistically significant?
+ 
+ t.test(alive$age, dead$age, alternative= "two.sided", conf.level = 0.99)
+ 
+ # normally, if p-value < 0.05, we reject null hypothesis
+ # here, p-value ~ 0, so we reject the null hypothesis and 
+ # conclude that this is statistically significant
+ 
+ # GENDER
+ # claim: gender has no effect
+ men = subset(data, gender == "male")
+ women = subset(data, gender == "female")
+ mean(men$death_dummy, na.rm = TRUE) #8.5%!
+ mean(women$death_dummy, na.rm = TRUE) #3.7%
+ 
+ # is this statistically significant?
+ t.test(men$death_dummy, women$death_dummy, alternative="two.sided", conf.level = 0.99)
+ # 99% confidence: men have from 0.8% to 8.8% higher chance
+ # of dying.
+ # p-value = 0.002 < 0.05, so this is statistically
+ # significant
+ 
+ 
+ # Compare death in men and women 
+ 
+ men_death <- mean(men$death_dummy, na.rm = TRUE) 
+ women_death <- mean(women$death_dummy, na.rm = TRUE) 
+ ggplot(data$death_dummy, aes(men_death,women_death)) +
+   geom_bar()
+ 
+ men_death <- mean(men$death_dummy, na.rm = TRUE)
+ women_death <- mean(women$death_dummy, na.rm = TRUE)
+ 
+ 
+
+ men_death <- mean(men$death_dummy, na.rm = TRUE)
+ women_death <- mean(women$death_dummy, na.rm = TRUE)
+ 
+ # Create a data frame for plotting
+ gender_death <- data.frame(Gender = c("Male", "Female"),
+                            Death_Rate = c(men_death, women_death))
+ 
+ # Create the bar plot
+ ggplot(gender_death, aes(x = Gender, y = Death_Rate)) +
+   geom_bar(stat = "identity", fill = "steelblue") +
+   labs(title = "Comparison of Death Rates between Men and Women")
+ 
+ 
+ 
